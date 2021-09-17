@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = ["Daniel <gleek.dan@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.68.1"
+uvicorn = {extras = ["standard"], version = "^0.15.0"}
+
+[tool.poetry.dev-dependencies]
+black = {version = "^21.9b0", allow-prereleases = true}
+pytest = "^6.2.5"
+requests = "^2.26.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
