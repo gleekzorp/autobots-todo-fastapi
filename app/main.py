@@ -1,23 +1,14 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
+
+from app import crud, models, schemas
+from app.database import engine, get_db
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
-class UserIn(BaseModel):
-    username: str
-    password: str
-
-
-class UserOut(BaseModel):
-    username: str
-
-
-@app.get("/")
-def hello_world():
-    return "Hello World!"
-
-
-@app.post("/create-user", response_model=UserOut)
-def create_user(user: UserIn):
-    return user
+@app.post("/create-user", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    return crud.create_user(db, user)
