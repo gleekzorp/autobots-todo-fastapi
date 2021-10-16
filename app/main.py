@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
@@ -12,3 +13,7 @@ app = FastAPI()
 @app.post("/create-user", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return crud.create_user(db, user)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
