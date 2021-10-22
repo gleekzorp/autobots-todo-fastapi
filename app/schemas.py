@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -11,6 +12,22 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
+
+    class Config:
+        orm_mode = True
+
+
+class TodoBase(BaseModel):
+    title: str
+
+
+class TodoCreate(TodoBase):
+    done: Optional[bool]
+
+
+class Todo(TodoBase):
+    id: int
+    done: bool
 
     class Config:
         orm_mode = True

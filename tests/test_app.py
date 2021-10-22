@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app import models
+from app import models, schemas
+from app import crud
 
 
 def test_create_user(client: TestClient):
@@ -25,3 +26,48 @@ def test_create_user_raises_username_taken(session: Session, client: TestClient)
 
     assert response.status_code == 409
     assert data["detail"] == "Username already registered"
+
+
+def test_todo_model(session: Session):
+    todo = models.Todo(title="Buy Milk", done=False)
+    session.add(todo)
+    session.commit()
+
+    todo_db = session.query(models.Todo).filter(models.Todo.id == 1).first()
+
+    assert todo_db.title == "Buy Milk"
+
+
+def test_todo_model_default_done(session: Session):
+    todo = models.Todo(title="Buy Milk")
+    session.add(todo)
+    session.commit()
+
+    todo_db = session.query(models.Todo).filter(models.Todo.id == 1).first()
+    assert todo_db.done is False
+
+
+def test_todo_model_done_is_none(session: Session):
+    todo = models.Todo(title="Buy Milk", done=None)
+    session.add(todo)
+    session.commit()
+
+    todo_db = session.query(models.Todo).filter(models.Todo.id == 1).first()
+    assert todo_db.done is False
+
+
+def test_create_todo(session: Session):
+    todo_dict = {"title": "Buy Milk", "done": False}
+    todo = crud.create_todo(db=session, todo=schemas.TodoCreate(**todo_dict))
+
+    assert todo.id == 1
+
+
+def test_create_todo_route(client: TestClient):
+    response = client.post("/create-todo", json={"title": "Buy Milk", "done": False})
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["title"] == "Buy Milk"
+    assert data["done"] is False
