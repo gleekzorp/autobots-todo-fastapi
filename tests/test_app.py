@@ -1,7 +1,9 @@
+from typing import Generator
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+import pytest
 from app import models, schemas
-from app import crud
+from app import crud, database
 
 
 def test_create_user(client: TestClient):
@@ -71,3 +73,49 @@ def test_create_todo_route(client: TestClient):
     assert data["id"] == 1
     assert data["title"] == "Buy Milk"
     assert data["done"] is False
+
+
+def test_get_db():
+    db = database.get_db()
+    session = next(db)
+    assert isinstance(db, Generator)
+    assert isinstance(session, Session)
+
+    # assert session.bind.engine.name == "sqlite"
+    # assert session.autocommit is False
+    # assert session.autoflush is False
+
+
+def test_get_user_by_username(session: Session):
+    user_1 = models.User(username="test1", password="test1")
+    session.add(user_1)
+    session.commit()
+    user = crud.get_user_by_username(db=session, username="test1")
+    assert user.username == "test1"
+
+
+def test_get_user_by_username_returns_none_when_not_found(session: Session):
+    user = crud.get_user_by_username(db=session, username="test1")
+    assert user is None
+
+
+def test_get_user_by_username_route(session: Session, client: TestClient):
+    user_1 = models.User(username="test1", password="test1")
+    session.add(user_1)
+    session.commit()
+
+    response = client.get(f"/get-user-by-username/{user_1.username}")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["username"] == "test1"
+
+
+def test_get_user_by_username_route_returns_user_not_found(
+    session: Session, client: TestClient
+):
+    response = client.get("/get-user-by-username/test1")
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "User not found"

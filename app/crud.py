@@ -17,6 +17,10 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     return db_user
 
 
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
+
 def create_todo(db: Session, todo: schemas.TodoCreate):
     db_todo = models.Todo(title=todo.title, done=todo.done)
     db.add(db_todo)
