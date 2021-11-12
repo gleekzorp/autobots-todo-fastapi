@@ -13,14 +13,18 @@ This project is a todo api with fastapi that we built at autobots. Come join in 
 
 - Run the following command in your terminal `poetry run uvicorn app.main:app --reload`
 
-## Planning
+## Pytest cov command
 
-- **User**
-  - username: str
-  - password: str
-  - create_at: date_time
-  - updated_at: date_time
-  - todos: Array[Todos]
-- **Todo**
-  - title: str
-  - done: Bool
+You can read more about pytest cov at https://pytest-cov.readthedocs.io/en/latest/
+
+- Run the tests and display the coverage in the terminal
+  - `poetry run pytest --cov-report term --cov=app tests/`
+- Run the tests and create an html report for a more in depth look
+  - `poetry run pytest --cov-report html:html_cov_report --cov=app tests/`
+
+## Current Homework
+
+Finish the following tasks:
+
+- Toggle Todo Complete
+- Delete Todo

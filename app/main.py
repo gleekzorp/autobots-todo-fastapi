@@ -30,5 +30,15 @@ def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
     return crud.create_todo(db, todo)
 
 
+@app.get("/get-todo-by-id/{todo_id}", response_model=schemas.Todo)
+def get_todo_by_id(todo_id: str, db: Session = Depends(get_db)):
+    todo = crud.get_todo_by_id(db, todo_id)
+    if not todo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
+        )
+    return todo
+
+
 if __name__ == "__main__":  # pragma: nocover
     uvicorn.run(app, host="0.0.0.0", port=8000)

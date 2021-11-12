@@ -1,7 +1,6 @@
 from typing import Generator
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-import pytest
 from app import models, schemas
 from app import crud, database
 
@@ -16,13 +15,9 @@ def test_create_user(client: TestClient):
     assert data["id"] is not None
 
 
-def test_create_user_raises_username_taken(session: Session, client: TestClient):
-    user_1 = models.User(username="test1", password="test1")
-    session.add(user_1)
-    session.commit()
-
+def test_create_user_raises_username_taken(client: TestClient, user: models.User):
     response = client.post(
-        "/create-user", json={"username": "test1", "password": "test1"}
+        "/create-user", json={"username": user.username, "password": user.password}
     )
     data = response.json()
 
@@ -86,12 +81,9 @@ def test_get_db():
     # assert session.autoflush is False
 
 
-def test_get_user_by_username(session: Session):
-    user_1 = models.User(username="test1", password="test1")
-    session.add(user_1)
-    session.commit()
-    user = crud.get_user_by_username(db=session, username="test1")
-    assert user.username == "test1"
+def test_get_user_by_username(session: Session, user: models.User):
+    response = crud.get_user_by_username(db=session, username=user.username)
+    assert response.username == user.username
 
 
 def test_get_user_by_username_returns_none_when_not_found(session: Session):
@@ -99,23 +91,45 @@ def test_get_user_by_username_returns_none_when_not_found(session: Session):
     assert user is None
 
 
-def test_get_user_by_username_route(session: Session, client: TestClient):
-    user_1 = models.User(username="test1", password="test1")
-    session.add(user_1)
-    session.commit()
-
-    response = client.get(f"/get-user-by-username/{user_1.username}")
+def test_get_user_by_username_route(client: TestClient, user: models.User):
+    response = client.get(f"/get-user-by-username/{user.username}")
     data = response.json()
 
     assert response.status_code == 200
     assert data["username"] == "test1"
 
 
-def test_get_user_by_username_route_returns_user_not_found(
-    session: Session, client: TestClient
-):
+def test_get_user_by_username_route_returns_user_not_found(client: TestClient):
     response = client.get("/get-user-by-username/test1")
     data = response.json()
 
     assert response.status_code == 404
     assert data["detail"] == "User not found"
+
+
+def test_get_todo_by_id(session: Session, todo: models.Todo):
+    response = crud.get_todo_by_id(db=session, todo_id=todo.id)
+    assert response.id == todo.id
+
+
+def test_get_todo_by_id_returns_none_when_not_found(session: Session):
+    todo = crud.get_todo_by_id(db=session, todo_id=1)
+    assert todo is None
+
+
+def test_get_todo_by_id_route(client: TestClient, todo: models.Todo):
+    response = client.get(f"/get-todo-by-id/{todo.id}")
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["id"] == todo.id
+    assert data["title"] == todo.title
+    assert data["done"] is todo.done
+
+
+def test_get_todo_by_id_route_returns_todo_not_found(client: TestClient):
+    response = client.get("/get-todo-by-id/1")
+    data = response.json()
+
+    assert response.status_code == 404
+    assert data["detail"] == "Todo not found"

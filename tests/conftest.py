@@ -28,3 +28,19 @@ def client_fixture(session: Session):
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def user(session: Session):
+    user = models.User(username="test1", password="test1")
+    session.add(user)
+    session.commit()
+    return user
+
+
+@pytest.fixture()
+def todo(session: Session):
+    todo = models.Todo(title="Buy Milk", done=False)
+    session.add(todo)
+    session.commit()
+    return todo
